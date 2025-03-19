@@ -1,77 +1,61 @@
-
 spring:
   application:
-    name: report-ms
-
+    name: ms-report
   profiles:
     active: ${PROFILE:default}
   config:
     import: ${SPRING_CONFIG_IMPORT:optional:configserver:http://configuser:a501082a-0573-4ff0-9522-d5c3d4b2e859@localhost:7777}
 
-  cloud:
-    config:
-      enabled: ${SPRING_CLOUD_CONFIG_ENABLED:true}
-      fail-fast:  ${SPRING_CLOUD_CONFIG_FAIL-FAST:false}
-
-
-  sql:
-    init:
-      mode: ${SPRING_SQL_INIT_MODE:never}
-
-  jpa:
-    open-in-view: ${SPRING_JPA_OPEN_IN_VIEW:false}
-    hibernate:
-      ddl-auto: ${SPRING_HIBERNATE_DLL_AUTO:validate}
-    properties:
-      hibernate:
-        jdbc:
-          batch_size: ${SPRING_JPA_PROPERTIES_HIBERNATE_JDBC_BATCH_SIZE:20}
-        order_updates: ${SPRING_JPA_PROPERTIES_HIBERNATE_ORDER_UPDATES:true}
-        order_inserts: ${SPRING_JPA_PROPERTIES_HIBERNATE_ORDER_INSERTS:true}
-        format_sql: ${SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL:true}
-
 server:
-  port: ${SERVER_PORT:8083}  # Ya est� configurado correctamente
+  port: 7070
   shutdown: ${SPRING_SERVER_SHUTDOWN:graceful}
   servlet:
-    context-path: /report-ms  # Ya est� configurado correctamente
+    context-path: /ms-report
 
 eureka:
-  server:
-    enable-self-preservatieureka:
-      server:
-        enable-self-preservation:${SPRING_EUREKA_SERVER_ENABLE_SELF_PRESERVATION:false}
-      client:
-        service-url:
-          defaultZone: ${EUREKA_SERVER_URL:"http://localhost:8761/eureka"}  # Cambia registry-server por localhost
-        registerWithEureka: ${SPRING_EUREKA_CLIENT_REGISTER_WITH_EUREKA:true}
-        fetchRegistry: ${SPRING_EUREKA_CLIENT_FETCH_REGISTRY:true}
-      instance:
-        prefer-ip-address: true
-        instance-id: "${spring.application.name}:${random.value}:${server.port}"
-        lease-renewal-interval-in-seconds: ${SPRING_EUREKA_INSTANCE_LEASE_RENEWAL_INTERVAL_IN_SECONDS:5}
-        lease-expiration-duration-in-seconds: ${SPRING_EUREKA_INSTANCE_LEASE_EXPIRATION_DURATION_IN_SECONDS:10}
-        metadata-map:
-          management.port: ${SPRING_EUREKA_INSTANCE_METADATA_MAP_MANAGEMENT_PORT:8084}  # Cambia de 8081 a 8084      management.port: ${SPRING_EUREKA_INSTANCE_METADATA_MAP_MANAGEMENT_PORT:8081}
+  instance:
+    instance-id: "${spring.application.name}:${random.value}:${server.port}"
+    prefer-ip-address: true
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+    registerWithEureka: ${SPRING_EUREKA_CLIENT_REGISTER_WITH_EUREKA:true}
+    fetchRegistry: ${SPRING_EUREKA_CLIENT_FETCH_REGISTRY:true}
 
-management:
-  server:
-    port: ${SPRING_MANAGEMENT_SERVER_PORT:8084}  # Cambia de 8081 a 8084
-  endpoints:
-    web:
-      exposure:
-        include: ${SPRING_MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE:*}
-  endpoint:
-    health:
-      show-details: ${SPRING_MANAGEMENT_ENDPOINTS_HEALTH_SHOW_DETAILS:always}
-  metrics:
-    enable:
-      all: ${SPRING_MANAGEMENT_METRICS_ENABLED_ALL:true}
+# Configuración de Feign con tiempos de espera más largos
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 500     # Timeout de conexión muy corto
+        readTimeout: 500        # Timeout de lectura muy corto
+        errorDecoder: customErrorDecoder
+      patient-service:
+        connectTimeout: 1000    # Timeout específico ligeramente más largo
+        readTimeout: 1000       # Timeout de lectura para patient-service
 
-springdoc:
-  api-docs:
-    enabled: ${SPRING_SPRINGDOC_API_DOCS_ENABLED:true}
-  swagger-ui:
-    enabled: ${SPRING_SPRINGDOC_SWAGGER_UI_ENABLED:true}
-    path: ${SPRING_SPRINGDOC_SWAGGER_UI_PATH:/swagger-ui.html}
+  circuitbreaker:
+    enabled: true
 
+resilience4j:
+  circuitbreaker:
+    instances:
+      patientServiceBreaker:
+        slidingWindowSize: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 1000
+        permittedNumberOfCallsInHalfOpenState: 2
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+ribbon:
+  ServerListRefreshInterval: 3000
+  ConnectTimeout: 1000
+  ReadTimeout: 2000
+  MaxAutoRetries: 0
+  MaxAutoRetriesNextServer: 0
+  OkToRetryOnAllOperations: false
+
+# Configuración específica de Ribbon para patient-service
+patient-service:
+  ribbon:
+    listOfServers: 192.168.100.16:8082
+    PreferSameZoneEureka: true

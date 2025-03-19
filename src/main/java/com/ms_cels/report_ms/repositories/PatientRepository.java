@@ -12,6 +12,6 @@ import java.util.Optional;
 @FeignClient(name = "patient-service")
 @LoadBalancerClient(name = "patient-service", configuration = LoadBalancerConfiguration.class)
 public interface PatientRepository {
-    @GetMapping("/api/v1/patients/e2c25e23-ac11-4592-b076-4113dfdbdb01{id}")
-    Optional<Patient>getById(@PathVariable String id);
+    @GetMapping("/api/v1/patients/{id}")
+    Optional<Patient> getById(@PathVariable String id);
 }
