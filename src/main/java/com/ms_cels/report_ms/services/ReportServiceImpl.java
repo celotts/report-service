@@ -89,9 +89,33 @@ public class ReportServiceImpl extends ReportService {
     private Map<String, Object> createReportFromPatient(Patient patient) {
         Map<String, Object> report = new HashMap<>();
         report.put("id", patient.getId());
-        report.put("nombre", patient.getFirstName() + " " + patient.getLastName());
-        report.put("genero", patient.getGender() != null ? patient.getGender() : "No especificado");
-        report.put("email", patient.getEmail() != null ? patient.getEmail() : "No especificado");
+        report.put("name", patient.getFirstName() != null ? patient.getFirstName() : "Name Not specified");
+        report.put("lastName",  patient.getLastName()!= null ? patient.getFirstName() : "LastName Not specified");
+        report.put("bithDate", patient.getBirthDate() != null ? patient.getBirthDate() : "BithDate Not specified");
+        report.put("gender", patient.getGender() != null ? patient.getGender() : "Gender Not specified");
+        report.put("bloodType", patient.getBloodType() != null ? patient.getBloodType() : "BloodType Not specified");
+        report.put("phone", patient.getPhone() != null ? patient.getPhone() : "Phone Not specified");
+        report.put("email", patient.getEmail() != null ? patient.getEmail() : "EmailNot specified");
+        report.put("address", patient.getAddress() != null ? patient.getAddress() : "Address Not specified");
+        report.put("city", patient.getCity() != null ? patient.getCity() : "City Not specified");
+        report.put("country", patient.getCountry() != null ? patient.getCountry() : "Country Not specified");
+        report.put("postalCode", patient.getPostalCode() != null ? patient.getPostalCode() : "PostalCodeNot specified");
+        report.put("emergencyContactName", patient.getEmergencyContactName() != null ? patient.getEmergencyContactName() : "EmergencyContactName Not specified");
+        report.put("emergencyContactPhone", patient.getEmergencyContactPhone() != null ? patient.getEmergencyContactPhone() : "EmergencyContactPhone Not specified");
+        report.put("emergencyContactName2", patient.getEmergencyContactName2() != null ? patient.getEmergencyContactName2() : "EmergencyContactName 2 Not specified");
+        report.put("emergencyContactPhone2", patient.getEmergencyContactPhone2() != null ? patient.getEmergencyContactPhone2() : "emergencyContactPhone 2 Not specified");
+        report.put("emergencyContactName3", patient.getEmergencyContactName3() != null ? patient.getEmergencyContactName3() : "EmergencyContactName 3 Not specified");
+        report.put("emergencyContactPhone3", patient.getEmergencyContactPhone3() != null ? patient.getEmergencyContactPhone3() : "EmergencyContactPhone 3 Not specified");
+        report.put("medicalHistory", patient.getMedicalHistory() != null ? patient.getMedicalHistory() : "MedicalHistory Not specified");
+        report.put("allergies", patient.getAllergies() != null ? patient.getAllergies() : "AllergiesNot specifieds");
+        report.put("insuranceProvider", patient.getInsuranceProvider() != null ? patient.getInsuranceProvider() : "InsuranceProvider Not specified");
+        report.put("insuranceNumber", patient.getRegistrationDate() != null ? patient.getRegistrationDate() : "InsuranceNumber Not specified");
+        report.put("updatedAt", patient.getUpdatedAt() != null ? patient.getUpdatedAt() : "UpdatedAt Not specified");
+        report.put("status", patient.getStatus() != null ? patient.getStatus() : "Status Not specified");
+        report.put("active", patient.getActive() != null ? patient.getActive() : "Not specified");
+
+
+
 
         log.info("Reporte básico generado para el paciente con ID: {}", patient.getId());
         return report;
