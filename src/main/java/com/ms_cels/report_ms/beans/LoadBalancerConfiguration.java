@@ -5,7 +5,6 @@ import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 
-
 @Slf4j
 public class LoadBalancerConfiguration {
 
@@ -15,6 +14,7 @@ public class LoadBalancerConfiguration {
         return ServiceInstanceListSupplier
                 .builder()
                 .withBlockingDiscoveryClient()
+                .withZonePreference()  // Nota se puede usar otra estrategia como withCaching(), withHealthChecks(), etc.
                 .build(context);
     }
 }

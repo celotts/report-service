@@ -1,5 +1,6 @@
 package com.ms_cels.report_ms.repositories;
 
+import com.ms_cels.report_ms.models.PatientBasicInfoDTO;
 import com.ms_cels.report_ms.beans.LoadBalancerConfiguration;
 import com.ms_cels.report_ms.models.Patient;
 import org.springframework.cloud.loadbalancer.annotation.LoadBalancerClient;
@@ -14,4 +15,11 @@ import java.util.Optional;
 public interface PatientRepository {
     @GetMapping("/api/v1/patients/{id}")
     Optional<Patient> getById(@PathVariable String id);
+
+    @GetMapping("/api/v1/patients/{id}")
+    Optional<PatientBasicInfoDTO> getBasicInfoById(@PathVariable String id);
+
+    // Opción 2: Si el endpoint existe en el servicio de pacientes
+    @GetMapping("/api/v1/patients/{id}/basic-info")
+    Optional<PatientBasicInfoDTO> getOnlyBasicInfo(@PathVariable String id);
 }
