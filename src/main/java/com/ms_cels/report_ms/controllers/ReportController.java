@@ -20,6 +20,7 @@ public class ReportController {
     @Autowired
     private ReportService reportService;
 
+
     @GetMapping("/")
     public ResponseEntity<String> home() {
         return ResponseEntity.ok("Report Service is running");

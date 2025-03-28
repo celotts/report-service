@@ -1,0 +1,15 @@
+spring:
+  cloud:
+    loadbalancer:
+      ribbon:
+        enabled: true
+
+    service-registry:
+      auto-registration:
+        enabled: true
+
+    loadbalancer.ribbon.enabled: true
+
+ribbon:
+  eureka:
+    enabled: true

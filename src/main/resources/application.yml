@@ -12,6 +12,9 @@ server:
   servlet:
     context-path: /ms-report
 
+report:
+  template: "templates/patient_report_template.md"
+
 eureka:
   instance:
     instance-id: "${spring.application.name}:${random.value}:${server.port}"
@@ -27,12 +30,12 @@ feign:
   client:
     config:
       default:
-        connectTimeout: 500     # Timeout de conexión muy corto
-        readTimeout: 500        # Timeout de lectura muy corto
-        errorDecoder: customErrorDecoder
+        connectTimeout: 10000     # 10 segundos para conexión
+        readTimeout: 10000        # 10 segundos para lectura
       patient-service:
-        connectTimeout: 1000    # Timeout específico ligeramente más largo
-        readTimeout: 1000       # Timeout de lectura para patient-service
+        connectTimeout: 10000     # 10 segundos para conexión a patient-service
+        readTimeout: 10000        # 10 segundos para lectura de patient-service
+        loggerLevel: full         # Añadido para depuración
 
   circuitbreaker:
     enabled: true
@@ -46,16 +49,25 @@ resilience4j:
         waitDurationInOpenState: 1000
         permittedNumberOfCallsInHalfOpenState: 2
         automaticTransitionFromOpenToHalfOpenEnabled: true
+
 ribbon:
   ServerListRefreshInterval: 3000
-  ConnectTimeout: 1000
-  ReadTimeout: 2000
-  MaxAutoRetries: 0
-  MaxAutoRetriesNextServer: 0
-  OkToRetryOnAllOperations: false
+  ConnectTimeout: 10000          # 10 segundos para conexión
+  ReadTimeout: 10000             # 10 segundos para lectura
+  MaxAutoRetries: 1              # Permite un reintento
+  MaxAutoRetriesNextServer: 1    # Intenta otro servidor si falla
+  OkToRetryOnAllOperations: true # Permite reintento en todas las operaciones
 
 # Configuración específica de Ribbon para patient-service
 patient-service:
   ribbon:
-    listOfServers: 192.168.100.16:8082
+    listOfServers: http://192.168.100.16:8082
+    NIWSServerListClassName: com.netflix.loadbalancer.ConfigurationBasedServerList
     PreferSameZoneEureka: true
+
+# Ajuste de logs para depuración
+logging:
+  level:
+    com.ms_cels.report_ms.repositories: DEBUG      # Activar logs para tus repositorios
+    org.springframework.cloud.openfeign: DEBUG     # Logs de Feign
+    com.netflix.discovery: INFO                    # Logs de Eureka
