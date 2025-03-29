@@ -6,6 +6,7 @@ import com.ms_cels.report_ms.repositories.DirectPatientRepository;
 import com.ms_cels.report_ms.repositories.PatientRepository;
 import com.netflix.discovery.EurekaClient;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,17 +22,19 @@ import java.util.concurrent.TimeoutException;
 @Service
 @Slf4j
 public class ReportServiceImpl extends ReportService {
+    @Getter
     private final PatientRepository patientRepository;
     private final ReportHelper reportHelper;
+    @Getter
     private final EurekaClient eurekaClient;
 
     @Autowired
     private DirectPatientRepository directPatientRepository;
 
-    // Caché local para almacenar pacientes por ID
+    // Local cache to store patients by ID
     private static final Map<String, Patient> patientCache = new ConcurrentHashMap<>();
 
-    // Constructor con los campos requeridos
+    // Constructor with required fields
     @Autowired
     public ReportServiceImpl(PatientRepository patientRepository, ReportHelper reportHelper, EurekaClient eurekaClient) {
         this.patientRepository = patientRepository;
@@ -42,83 +45,84 @@ public class ReportServiceImpl extends ReportService {
     @Override
     @CircuitBreaker(name = "patientServiceBreaker", fallbackMethod = "fallbackMakeReport")
     public Map<String, Object> makeReport(String id) {
-        // Primero intentar obtener el paciente de la caché
+        // First try to get the patient from cache
 
         reportHelper.readTemplate();
 
-        log.info("Verificando caché para paciente con ID {}", id);
+        log.info("Checking cache for patient with ID {}", id);
         Patient patient = patientCache.get(id);
-        log.info("Estado de caché para ID {}: {}", id, patient == null ? "NO ENCONTRADO" : "ENCONTRADO");
+
+        log.info("Cache status for ID {}: {}", id, patient == null ? "NOT FOUND" : "FOUND");
 
         if (patient == null) {
-            log.info("Paciente con ID {} no encontrado en caché, consultando servicio", id);
+            log.info("Patient with ID {} not found in cache, querying service", id);
             patient = fetchPatientWithTimeout(id);
 
             if (patient != null) {
-                // Almacenar en caché para futuras solicitudes
+                // Store in cache for future requests
                 patientCache.put(id, patient);
-                log.info("Paciente con ID {} almacenado en caché", id);
+                log.info("Patient with cached ID {}", id);
             } else {
-                log.warn("No se encontró paciente con ID: {}", id);
+                log.warn("No patient found with ID: {}", id);
                 return createErrorReport(id);
             }
         } else {
-            log.info("Paciente con ID {} obtenido desde caché local", id);
+            log.info("Patient with ID {} obtained from local cache", id);
         }
 
-        // Generar el reporte usando el paciente (ya sea de caché o recién obtenido)
+        // Generate the report using the patient (either from cache or newly obtained)
         return createReportFromPatient(patient);
     }
 
-    // Método para obtener paciente con timeout controlado
+    // Method to get patient with controlled timeout
     private Patient fetchPatientWithTimeout(String id) {
-        log.info("Intentando obtener paciente con ID {} directamente", id);
+        log.info("Trying to get patient with ID {} directly", id);
 
         CompletableFuture<Optional<Patient>> future = CompletableFuture.supplyAsync(() ->
                 directPatientRepository.getPatientById(id)
         );
 
         try {
-            Optional<Patient> result = future.get(10, TimeUnit.SECONDS); // Aumentado a 10 segundos
-            log.info("Resultado de consulta directa para ID {}: {}",
-                    id, result.isPresent() ? "Encontrado" : "No encontrado");
+            Optional<Patient> result = future.get(10, TimeUnit.SECONDS); // Increased to 10 seconds
+            log.info("Direct query result for ID {}: {}",
+                    id, result.isPresent() ? "Found" : "Not found");
             return result.orElse(null);
         } catch (TimeoutException e) {
-            log.warn("Timeout al obtener paciente con ID: {}", id);
+            log.warn("Timeout when getting patient with ID: {}", id);
             return null;
         } catch (Exception e) {
-            log.error("Error al obtener paciente con ID {}: {}", id, e.getMessage(), e);
+            log.error("Error getting patient ID {}: {}", id, e.getMessage(), e);
             return null;
         }
     }
 
-    // Método de fallback para manejar errores
+    // Fallback method to handle errors
     public Map<String, Object> fallbackMakeReport(String id, Throwable throwable) {
-        log.error("Fallback para paciente ID: {}", id, throwable);
+        log.error("Fallback for patient ID: {}", id, throwable);
         return createErrorReport(id);
     }
 
-    // Método para crear reporte de error
+    // Method to create error report
     private Map<String, Object> createErrorReport(String id) {
         Map<String, Object> errorReport = new HashMap<>();
-        errorReport.put("error", "No se encontró paciente con ID: " + id);
+        errorReport.put("error", "No patient with ID was found: " + id);
         return errorReport;
     }
 
-    // Método para crear reporte desde paciente
+    // Method to create report from patient
     private Map<String, Object> createReportFromPatient(Patient patient) {
         Map<String, Object> reportData = new HashMap<>();
         reportData.put("id", patient.getId());
         reportData.put("name", patient.getFirstName() != null ? patient.getFirstName() : "Name Not specified");
         reportData.put("lastName", patient.getLastName() != null ? patient.getLastName() : "LastName Not specified");
-        reportData.put("birthDate", patient.getBirthDate() != null ? patient.getBirthDate() : "BithDate Not specified");
+        reportData.put("birthDate", patient.getBirthDate() != null ? patient.getBirthDate() : "BirthDate Not specified");
 
-        // Calcular la edad a partir de la fecha de nacimiento
+        // Calculate age from birth date
         if (patient.getBirthDate() != null) {
             try {
-                // Convertir String a LocalDate usando el formato correcto
+                // Convert String to LocalDate using correct format
                 String dateStr = patient.getBirthDate().toString();
-                // Si la fecha incluye tiempo, tomamos solo la parte de la fecha
+                // If date includes time, take only the date part
                 if (dateStr.contains("T")) {
                     dateStr = dateStr.split("T")[0];
                 }
@@ -126,11 +130,11 @@ public class ReportServiceImpl extends ReportService {
                 int age = java.time.Period.between(birthDate, java.time.LocalDate.now()).getYears();
                 reportData.put("age", String.valueOf(age));
             } catch (Exception e) {
-                log.error("No se pudo calcular la edad para la fecha: {}", patient.getBirthDate(), e);
-                reportData.put("age", "No especificado");
+                log.error("The age could not be calculated for the date: {}", patient.getBirthDate(), e);
+                reportData.put("age", "Not specified");
             }
         } else {
-            reportData.put("age", "No especificado");
+            reportData.put("age", "Not specified");
         }
 
         reportData.put("gender", patient.getGender() != null ? patient.getGender() : "Gender Not specified");
@@ -155,37 +159,37 @@ public class ReportServiceImpl extends ReportService {
         reportData.put("status", patient.getStatus() != null ? patient.getStatus() : "Status Not specified");
         reportData.put("active", patient.getActive() != null ? patient.getActive() : "Not specified");
 
-        // Añadir la fecha de emisión del reporte y un ID único
-        reportData.put("fechaEmision", java.time.LocalDateTime.now().toString());
-        reportData.put("reporteId", java.util.UUID.randomUUID().toString());
+        // Change to English names to match PatientReportDTO
+        reportData.put("issueDate", java.time.LocalDateTime.now().toString());
+        reportData.put("reportId", java.util.UUID.randomUUID().toString());
 
-        // Obtener la plantilla y procesarla
+        // Get the template and process it
         String template = reportHelper.readTemplate();
         String processedReport = reportHelper.processTemplate(template, reportData);
 
-        // Agregar el reporte procesado al mapa de resultados
+        // Change the field name to generatedReport in English
         Map<String, Object> result = new HashMap<>(reportData);
-        result.put("reporteGenerado", processedReport);
+        result.put("generatedReport", processedReport);
 
-        log.info("Reporte básico generado para el paciente con ID: {}", patient.getId());
+        log.info("Basic report generated for the patient with ID: {}", patient.getId());
         return result;
     }
 
     @Override
     String saveReport(String idReport) {
-        log.info("Guardando reporte con ID: {}", idReport);
-        return "Reporte guardado con id: " + idReport;
+        log.info("Saving report with ID: {}", idReport);
+        return "Report saved with id: " + idReport;
     }
 
     @Override
     void deleteReport(String name) {
-        log.info("Eliminando reporte: {}", name);
-        System.out.println("Reporte eliminado: " + name);
+        log.info("Deleting report: {}", name);
+        System.out.println("Report deleted: " + name);
     }
 
-    // Método opcional para limpiar la caché o refrescar un paciente específico
+    // Optional method to clear cache or refresh a specific patient
     public void refreshPatientCache(String id) {
         patientCache.remove(id);
-        log.info("Paciente con ID {} eliminado de la caché", id);
+        log.info("Patient with ID {} removed from cache", id);
     }
 }

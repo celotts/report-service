@@ -15,12 +15,12 @@ public class DirectPatientRepository {
 
     public Optional<Patient> getPatientById(String id) {
         try {
-            log.info("Consultando directamente al servicio en: {}", PATIENT_SERVICE_URL + id);
+            log.info("By consulting the service directly in: {}", PATIENT_SERVICE_URL + id);
             Patient patient = restTemplate.getForObject(PATIENT_SERVICE_URL + id, Patient.class);
-            log.info("Respuesta directa: {}", patient != null ? "Encontrado" : "No encontrado");
+            log.info("Direct response: {}", patient != null ? "Found" : "Not found");
             return Optional.ofNullable(patient);
         } catch (Exception e) {
-            log.error("Error al obtener paciente directamente: {}", e.getMessage(), e);
+            log.error("Error getting patient directly: {}", e.getMessage(), e);
             return Optional.empty();
         }
     }

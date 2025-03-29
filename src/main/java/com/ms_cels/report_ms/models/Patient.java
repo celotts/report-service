@@ -1,7 +1,6 @@
 package com.ms_cels.report_ms.models;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.*;
+
 import lombok.*;
 
 import java.time.LocalDate;

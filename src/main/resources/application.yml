@@ -13,7 +13,8 @@ server:
     context-path: /ms-report
 
 report:
-  template: "templates/patient_report_template.md"
+  template: "templates/patient_report_template.md"  # Mantén esta configuración existente para compatibilidad
+  template-url: "https://raw.githubusercontent.com/celotts/config-server-repo/main/ms-report.yml"
 
 eureka:
   instance:
