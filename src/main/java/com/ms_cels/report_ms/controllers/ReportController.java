@@ -45,6 +45,7 @@ public class ReportController {
         simplifiedReport.put("generatedReport", fullReport.get("generatedReport"));
         simplifiedReport.put("patientId", fullReport.get("id"));
         simplifiedReport.put("patientName", fullReport.get("name") + " " + fullReport.get("lastName"));
+        simplifiedReport.put("email", fullReport.get("email"));
 
         return ResponseEntity.ok(simplifiedReport);
     }

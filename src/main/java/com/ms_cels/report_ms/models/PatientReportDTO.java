@@ -15,4 +15,5 @@ public class PatientReportDTO {
     private String generatedReport;
     private String patientId;
     private String patientName;
+    private String email;
 }
