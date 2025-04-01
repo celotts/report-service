@@ -1,22 +1,25 @@
 package com.ms_cels.report_ms.controllers;
 
-import com.ms_cels.report_ms.services.ReportService;
+import com.ms_cels.report_ms.application.port.input.ReportUseCase;
+import com.ms_cels.report_ms.domain.model.PatientReport;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
-
 @RestController
 @Slf4j
 public class ReportController {
 
-    private final ReportService reportService;
+    private final ReportUseCase reportUseCase;
 
-    public ReportController(ReportService reportService) {
-        this.reportService = reportService;
+    @Autowired
+    public ReportController(@Qualifier("hexagonalReportService") ReportUseCase reportUseCase) {
+        this.reportUseCase = reportUseCase;
     }
 
 
@@ -32,7 +35,7 @@ public class ReportController {
 
     @GetMapping("/report/{id}")
     public ResponseEntity<Map<String, Object>> generatePatientReport(@PathVariable String id) {
-        Map<String, Object> fullReport = reportService.makeReport(id);
+        Map<String, Object> fullReport = reportUseCase.makeReport(id);
 
         if (fullReport.containsKey("error")) {
             return ResponseEntity.notFound().build();
@@ -49,6 +52,31 @@ public class ReportController {
 
         return ResponseEntity.ok(simplifiedReport);
     }
+
+    @GetMapping("/report/generate/{id}")
+    public ResponseEntity<PatientReport> generatePatientReportDetails(@PathVariable String id) {
+        try {
+            return ResponseEntity.ok(reportUseCase.generatePatientReport(id));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+
+    @PostMapping("/report/save")
+    public ResponseEntity<String> saveReport(@RequestParam String idReport) {
+        String result = reportUseCase.saveReport(idReport);
+        return ResponseEntity.ok(result);
+    }
+
+    @DeleteMapping("/report/{name}")
+    public ResponseEntity<Void> deleteReport(@PathVariable String name) {
+        reportUseCase.deleteReport(name);
+        return ResponseEntity.noContent().build();
+    }
+
+
+
 
 
 }

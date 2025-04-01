@@ -1,7 +1,8 @@
-package com.ms_cels.report_ms.services;
+package com.ms_cels.report_ms.application.service;
 
-import com.ms_cels.report_ms.application.port.input.ReportUseCase;
+
 import com.ms_cels.report_ms.domain.model.PatientReport;
+import com.ms_cels.report_ms.application.port.input.ReportUseCase;
 import com.ms_cels.report_ms.helpers.ReportHelper;
 import com.ms_cels.report_ms.models.Patient;
 import com.ms_cels.report_ms.repositories.DirectPatientRepository;
@@ -11,7 +12,10 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +27,8 @@ import java.util.concurrent.TimeoutException;
 
 @Service
 @Slf4j
-public abstract class ReportServiceImpl implements ReportUseCase {
+@Qualifier("hexagonalReportService") // Añadir un calificador
+public class ReportService implements ReportUseCase {
     @Getter
     private final PatientRepository patientRepository;
     private final ReportHelper reportHelper;
@@ -38,7 +43,7 @@ public abstract class ReportServiceImpl implements ReportUseCase {
 
     // Constructor with required fields
     @Autowired
-    public ReportServiceImpl(PatientRepository patientRepository, ReportHelper reportHelper, EurekaClient eurekaClient) {
+    public ReportService(PatientRepository patientRepository, ReportHelper reportHelper, EurekaClient eurekaClient) {
         this.patientRepository = patientRepository;
         this.reportHelper = reportHelper;
         this.eurekaClient = eurekaClient;
@@ -184,15 +189,6 @@ public abstract class ReportServiceImpl implements ReportUseCase {
     }
 
     @Override
-    public void deleteReport(String name) {
-        log.info("Deleting report: {}", name);
-        System.out.println("Report deleted: " + name);
-    }
-    // Añadir la importación al principio del archivo
-
-
-    // Y luego implementar el método así
-    @Override
     public PatientReport generatePatientReport(String id) {
         Map<String, Object> fullReport = makeReport(id);
 
@@ -209,9 +205,18 @@ public abstract class ReportServiceImpl implements ReportUseCase {
                 .email((String) fullReport.get("email"))
                 .build();
     }
+
+    @Override
+    public void deleteReport(String name) {
+        log.info("Deleting report: {}", name);
+        System.out.println("Report deleted: " + name);
+    }
+
+
+
     // Optional method to clear cache or refresh a specific patient
-     //public void refreshPatientCache(String id) {
-     //    patientCache.remove(id);
-     //    log.info("Patient with ID {} removed from cache", id);
-     //}
+    //public void refreshPatientCache(String id) {
+    //    patientCache.remove(id);
+    //    log.info("Patient with ID {} removed from cache", id);
+    //}
 }
