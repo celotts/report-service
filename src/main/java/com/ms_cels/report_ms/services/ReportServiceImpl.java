@@ -98,11 +98,7 @@ public abstract class ReportServiceImpl implements ReportUseCase {
         }
     }
 
-    // Fallback method to handle errors
-    public Map<String, Object> fallbackMakeReport(String id, Throwable throwable) {
-        log.error("Fallback for patient ID: {}", id, throwable);
-        return createErrorReport(id);
-    }
+
 
     // Method to create error report
     private Map<String, Object> createErrorReport(String id) {

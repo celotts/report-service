@@ -49,6 +49,8 @@ public class ReportService implements ReportUseCase {
         this.eurekaClient = eurekaClient;
     }
 
+
+
     @Override
     @CircuitBreaker(name = "patientServiceBreaker", fallbackMethod = "fallbackMakeReport")
     public Map<String, Object> makeReport(String id) {
