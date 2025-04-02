@@ -8,7 +8,7 @@ spring:
   profiles:
     active: ${PROFILE:default}
   config:
-    import: ${SPRING_CONFIG_IMPORT:optional:configserver:http://configuser:a501082a-0573-4ff0-9522-d5c3d4b2e859@localhost:7777}
+    import: ${SPRING_CONFIG_IMPORT:optional:configserver:}
 
 server:
   port: 7070
