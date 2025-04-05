@@ -11,7 +11,7 @@ spring:
     import: ${SPRING_CONFIG_IMPORT:optional:configserver:}
 
 server:
-  port: 7070
+  port: 7071
   shutdown: ${SPRING_SERVER_SHUTDOWN:graceful}
   servlet:
     context-path: /ms-report
@@ -20,13 +20,16 @@ report:
   template: "templates/patient_report_template.md"  # Mantén esta configuración existente para compatibilidad
   template-url: "https://raw.githubusercontent.com/celotts/config-server-repo/main/ms-report.yml"
 
+
 eureka:
   instance:
-    instance-id: "${spring.application.name}:${random.value}:${server.port}"
+    hostname: ${spring.application.name}-${random.uuid}-${PORT:7071}
+    instance-id: ${spring.application.name}:${random.uuid}:${PORT:7071}
     prefer-ip-address: true
+
   client:
     service-url:
-      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8762/eureka/}
     registerWithEureka: ${SPRING_EUREKA_CLIENT_REGISTER_WITH_EUREKA:true}
     fetchRegistry: ${SPRING_EUREKA_CLIENT_FETCH_REGISTRY:true}
 
