@@ -10,10 +10,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PatientReportDTO {
-    private String reportId;
-    private String issueDate;
-    private String generatedReport;
-    private String patientId;
-    private String patientName;
+    private String id;
+    private String name;
+    private String lastName;
     private String email;
+    private String phone;
+    private String birthDate;
+    private String address;
+    private String gender;
+    private String bloodType;
 }

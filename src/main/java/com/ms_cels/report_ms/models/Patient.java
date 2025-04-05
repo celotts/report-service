@@ -35,4 +35,7 @@ public class Patient {
     private Boolean status;
     private Boolean active;
     private LocalDate dateBirth;
+
+    public Patient(String id, String name, String lastName, String email, String phone, String birthDate, String address, String gender, String bloodType) {
+    }
 }
