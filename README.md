@@ -65,7 +65,7 @@ curl http://localhost:8083/actuator/health
 http://localhost:8083/api/swagger-ui/index.html
 
 Config server (UP)
-Hacer click en el botón RUN de IntelliJ
+Hacer click en el botón RUN de IntelliJ.
 
 🔹 7. Ejecutar en modo desarrollo (Opcional)
 
