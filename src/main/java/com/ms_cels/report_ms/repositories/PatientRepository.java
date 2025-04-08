@@ -15,5 +15,4 @@ public interface PatientRepository {
     @GetMapping("/api/v1/patients/{id}")
     Optional<Patient> getById(@PathVariable String id);
 
-
 }
