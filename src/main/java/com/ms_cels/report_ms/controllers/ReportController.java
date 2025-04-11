@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.ResourceAccessException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,22 +36,36 @@ public class ReportController {
 
     @GetMapping("/report/{id}")
     public ResponseEntity<Map<String, Object>> generatePatientReport(@PathVariable String id) {
-        Map<String, Object> fullReport = reportUseCase.makeReport(id);
+        try {
+            Map<String, Object> fullReport = reportUseCase.makeReport(id);
 
-        if (fullReport.containsKey("error")) {
-            return ResponseEntity.notFound().build();
+            Map<String, Object> simplifiedReport = new HashMap<>();
+            simplifiedReport.put("reportId", fullReport.get("reportId"));
+            simplifiedReport.put("issueDate", fullReport.get("issueDate"));
+            simplifiedReport.put("generatedReport", fullReport.get("generatedReport"));
+            simplifiedReport.put("patientId", fullReport.get("id"));
+            simplifiedReport.put("patientName", fullReport.get("name") + " " + fullReport.get("lastName"));
+            simplifiedReport.put("email", fullReport.get("email"));
+
+            return ResponseEntity.ok(simplifiedReport);
+
+        } catch (ResourceAccessException ex) {
+            return ResponseEntity.status(503).body(Map.of(
+                    "mensaje", "El servicio de pacientes no está disponible",
+                    "error", "No se pudo establecer conexión con el microservicio de pacientes"
+            ));
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(404).body(Map.of(
+                    "mensaje", "El paciente con ID " + id + " no fue encontrado",
+                    "error", ex.getMessage()
+            ));
+        } catch (Exception ex) {
+            return ResponseEntity.status(500).body(Map.of(
+                    "mensaje", "Error interno al generar el reporte",
+                    "error", ex.getClass().getSimpleName(),
+                    "detalle", ex.getMessage()
+            ));
         }
-
-        // Crear un mapa simplificado solo con la información relevante
-        Map<String, Object> simplifiedReport = new HashMap<>();
-        simplifiedReport.put("reportId", fullReport.get("reportId"));
-        simplifiedReport.put("issueDate", fullReport.get("issueDate"));
-        simplifiedReport.put("generatedReport", fullReport.get("generatedReport"));
-        simplifiedReport.put("patientId", fullReport.get("id"));
-        simplifiedReport.put("patientName", fullReport.get("name") + " " + fullReport.get("lastName"));
-        simplifiedReport.put("email", fullReport.get("email"));
-
-        return ResponseEntity.ok(simplifiedReport);
     }
 
     @GetMapping("/report/generate/{id}")
