@@ -29,7 +29,7 @@ medical-system/
 ├── registry-service/
 ├── patient-service/
 ├── report-service/
-├── infra-docker/
+├── infra-docker/git 
 │   ├── docker-compose.yml
 │   ├── .env*
 │   └── scripts/
