@@ -29,7 +29,7 @@ eureka:
 
   client:
     service-url:
-      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8762/eureka/}
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://registry-service:8761/eureka/}
     registerWithEureka: ${SPRING_EUREKA_CLIENT_REGISTER_WITH_EUREKA:true}
     fetchRegistry: ${SPRING_EUREKA_CLIENT_FETCH_REGISTRY:true}
 
