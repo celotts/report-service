@@ -13,8 +13,8 @@ function wait_for_service() {
 
 # === Espera por dependencias ===
 wait_for_service "registry-service" "registry-service:8761" 60
-wait_for_service "config-service" "config-service:7777" 60
-wait_for_service "patient-service" "patient-service:8081" 120
+#wait_for_service "config-service" "config-service:7777" 60
+#wait_for_service "patient-service" "patient-service:8081" 120
 
 # === Lanzar app ===
 echo "🚀 Iniciando app.jar..."
